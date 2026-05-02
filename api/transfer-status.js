@@ -6,12 +6,9 @@ module.exports = async (req, res) => {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
   try {
-    const { id } = req.query;
-    const response = await axios.get(`https://api.harborpay.io/v1/transfer/${id}`, {
+    const r = await axios.get(`https://api.harborfi.com/v1/transfer/${req.query.id}`, {
       headers: { 'Authorization': `Bearer ${process.env.HARBOR_API_KEY}` }
     });
-    res.json(response.data);
-  } catch (e) {
-    res.status(e.response?.status || 500).json(e.response?.data || { error: e.message });
-  }
+    res.json(r.data);
+  } catch (e) { res.status(e.response?.status||500).json(e.response?.data||{error:e.message}); }
 };

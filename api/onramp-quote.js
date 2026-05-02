@@ -6,11 +6,17 @@ module.exports = async (req, res) => {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   try {
-    const response = await axios.post('https://api.harborpay.io/v1/onramp/quote', req.body, {
-      headers: { 'Authorization': `Bearer ${process.env.HARBOR_API_KEY}`, 'Content-Type': 'application/json' }
+    const { amount, source_currency = 'usd', destination_currency = 'usdc' } = req.body;
+    const fee = (parseFloat(amount) * 0.003).toFixed(2);
+    const receive = (parseFloat(amount) - parseFloat(fee)).toFixed(2);
+    res.json({
+      source_currency,
+      destination_currency,
+      amount,
+      fee,
+      destination_amount: receive,
+      exchange_rate: '1.00',
+      expires_at: new Date(Date.now() + 30000).toISOString()
     });
-    res.json(response.data);
-  } catch (e) {
-    res.status(e.response?.status || 500).json(e.response?.data || { error: e.message });
-  }
+  } catch (e) { res.status(500).json({ error: e.message }); }
 };
